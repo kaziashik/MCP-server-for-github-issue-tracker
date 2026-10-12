@@ -152,15 +152,39 @@ It is connected when the Streamable HTTP error is gone and these tools are enabl
 
 ## Test the server from Cursor
 
-1. Confirm the process is up: open `http://localhost:8080/health`. It should return `{"status":"healthy"}`.
+1. Confirm the server is up. Local: `http://localhost:8080/health`. Hosted: `https://mcp-server-for-github-issue-tracker.mcpize.run/health`. Both should return `{"status":"healthy"}`.
 2. In Cursor MCP settings, click **Reload** on `github-issue-tracker`.
-3. Open a new Agent chat and ask:
+3. Open a new Agent chat and paste one prompt at a time.
+
+A connected server returns tool output. A missing or invalid `GITHUB_TOKEN` returns a GitHub authentication error. After you change `.env`, restart `npm run dev` and reload the server in Cursor. On MCPize, set the secret and run `mcpize deploy` again.
+
+These three only read GitHub:
 
 ```text
-Use the github-issue-tracker list_issues tool for owner kaziashik and repo MCP-server-for-github-issue-tracker
+Use the github-issue-tracker list_issues tool for owner kaziashik and repo MCP-server-for-github-issue-tracker. Include open, closed, and all issues.
 ```
 
-A connected server returns an issue list, or `No issues found.` A missing or invalid `GITHUB_TOKEN` returns a GitHub authentication error instead. Restart `npm run dev` after you change `.env`, then reload the server in Cursor.
+```text
+Use the github-issue-tracker weekly_digest tool for owner kaziashik and repo MCP-server-for-github-issue-tracker.
+```
+
+```text
+Use the github-issue-tracker release_notes tool for owner kaziashik and repo MCP-server-for-github-issue-tracker.
+```
+
+`list_issues` returns issue titles, or `No issues found.` `weekly_digest` returns a count for the last 7 days. `release_notes` returns merged pull requests, or `No recent merged PRs found.`
+
+These two change the repository. Create a test issue on GitHub first, then replace `1` with that issue number.
+
+```text
+Use the github-issue-tracker triage_issue tool for owner kaziashik, repo MCP-server-for-github-issue-tracker, and issue number 1.
+```
+
+```text
+Use the github-issue-tracker add_comment tool for owner kaziashik, repo MCP-server-for-github-issue-tracker, and issue number 1. Comment body: MCP server test comment.
+```
+
+`triage_issue` adds the label `bug` when the title or body contains "bug", otherwise `enhancement`. `add_comment` posts that text on the issue.
 
 ## Deploy on MCPize
 
@@ -182,7 +206,13 @@ After a successful deploy:
 - MCP: `https://mcp-server-for-github-issue-tracker.mcpize.run/mcp`
 - Marketplace: `https://mcpize.com/mcp/mcp-server-for-github-issue-tracker`
 
-To use the hosted server in Cursor, change `.cursor/mcp.json` to:
+## Connect Cursor to the live link
+
+Yes. After deploy you can use the hosted server instead of `localhost`. Cursor needs the MCP path, not the site root:
+
+`https://mcp-server-for-github-issue-tracker.mcpize.run/mcp`
+
+Put that URL in `.cursor/mcp.json`:
 
 ```json
 {
@@ -194,6 +224,20 @@ To use the hosted server in Cursor, change `.cursor/mcp.json` to:
 }
 ```
 
-Reload the server in **Cursor Settings → MCP**, then run the same `list_issues` test. Check status anytime with `mcpize status` and `mcpize logs`.
+Then:
+
+1. Open **Cursor Settings → MCP**.
+2. Reload **github-issue-tracker**.
+3. Stop the local `npm run dev` process. Cursor is now calling the hosted server.
+4. Test with the same `list_issues` prompt.
+
+If a tool returns a GitHub authentication error, the cloud server does not have the token yet. Set it, then deploy again:
+
+```bash
+mcpize secrets set GITHUB_TOKEN
+mcpize deploy
+```
+
+Check the deployment anytime with `mcpize status` and `mcpize logs`.
 
 ---
