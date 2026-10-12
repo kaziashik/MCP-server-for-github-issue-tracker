@@ -1,4 +1,4 @@
-# 🚀 Build & Monetize Your First MCP Server (Model Context Protocol) | MCPize 
+# 🚀 Build & Monetize  MCP Server (Model Context Protocol) | MCPize 
 
 
 
