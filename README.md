@@ -122,11 +122,11 @@ npm run build  # compile TypeScript to dist/
 npm start      # run the compiled server
 ```
 
-## Connect the server in Cursor
+## Connect an MCP client
 
-This server speaks HTTP, so Cursor does not start it. `npm run dev` must already be running.
+This server speaks HTTP, so the client does not start it. `npm run dev` must already be running.
 
-1. In the project root, create `.cursor/mcp.json`:
+To connect Cursor, add this file at `.cursor/mcp.json` in the project root. The `url` is the MCP endpoint the client calls:
 
 ```json
 {
@@ -138,9 +138,13 @@ This server speaks HTTP, so Cursor does not start it. `npm run dev` must already
 }
 ```
 
-2. Open **Cursor Settings → MCP**.
-3. Find **github-issue-tracker** and turn the project source on.
-4. Click **Reload**.
+That block is the whole client connection. `github-issue-tracker` is the name Cursor shows, and `http://localhost:8080/mcp` is this server.
+
+Then, in Cursor:
+
+1. Open **Cursor Settings → MCP**.
+2. Find **github-issue-tracker** and turn the project source on.
+3. Click **Reload**.
 
 It is connected when the Streamable HTTP error is gone and these tools are enabled: `list_issues`, `triage_issue`, `weekly_digest`, `release_notes`, `add_comment`.
 
