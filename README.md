@@ -1,5 +1,7 @@
 # GitHub Issue Tracker MCP Server
 
+![GitHub MCP Server: GitHub data to MCP tools to AI clients, deployed through MCPize](MCP_server.png)
+
 A small [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) server. It lets Cursor list GitHub issues, label them, post comments, and draft a weekly digest and release notes.
 
 Almost all of the code is in `src/index.ts`. GitHub access uses `GITHUB_TOKEN`.
