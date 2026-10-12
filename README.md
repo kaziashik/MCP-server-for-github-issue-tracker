@@ -36,7 +36,8 @@ This small projet covers:
 | `tsconfig.json` | TypeScript config |
 | `mcpize.yaml` | MCPize deploy manifest (TypeScript, HTTP) |
 | `Dockerfile` | Multi-stage Node 22 image, port 8080 |
-| `.env` | Local environment variables (currently empty) |
+| `.env` | Local `GITHUB_TOKEN` (never commit this file) |
+| `.cursor/mcp.json` | Cursor connection to this server |
 
 The server listens on `PORT` (default `8080`).
 

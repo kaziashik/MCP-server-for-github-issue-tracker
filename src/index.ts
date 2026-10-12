@@ -218,6 +218,18 @@ app.post("/mcp", async (req: Request, res: Response) => {
     await transport.handleRequest(req, res, req.body);
 });
 
+// Cursor opens a GET stream after initialize. 405 means this server has no SSE stream.
+const methodNotAllowed = (_req: Request, res: Response) => {
+    res.status(405).set("Allow", "POST").json({
+        jsonrpc: "2.0",
+        error: { code: -32000, message: "Method not allowed." },
+        id: null,
+    });
+};
+
+app.get("/mcp", methodNotAllowed);
+app.delete("/mcp", methodNotAllowed);
+
 // ============================================================================
 // Start Server
 // ============================================================================

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "github-issue-tracker": {
+      "url": "http://localhost:8080/mcp"
+    }
+  }
+}
