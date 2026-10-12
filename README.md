@@ -162,4 +162,38 @@ Use the github-issue-tracker list_issues tool for owner kaziashik and repo MCP-s
 
 A connected server returns an issue list, or `No issues found.` A missing or invalid `GITHUB_TOKEN` returns a GitHub authentication error instead. Restart `npm run dev` after you change `.env`, then reload the server in Cursor.
 
+## Deploy on MCPize
+
+`mcpize.yaml` already tells MCPize how to build and start this server.
+
+```bash
+npm install -g mcpize
+mcpize login
+mcpize secrets set GITHUB_TOKEN
+mcpize deploy
+```
+
+`mcpize login` opens the browser. `mcpize secrets set GITHUB_TOKEN` asks for the token in the terminal. Do not put that token in the repo.
+
+After a successful deploy:
+
+- Gateway: `https://mcp-server-for-github-issue-tracker.mcpize.run`
+- Health: `https://mcp-server-for-github-issue-tracker.mcpize.run/health`
+- MCP: `https://mcp-server-for-github-issue-tracker.mcpize.run/mcp`
+- Marketplace: `https://mcpize.com/mcp/mcp-server-for-github-issue-tracker`
+
+To use the hosted server in Cursor, change `.cursor/mcp.json` to:
+
+```json
+{
+  "mcpServers": {
+    "github-issue-tracker": {
+      "url": "https://mcp-server-for-github-issue-tracker.mcpize.run/mcp"
+    }
+  }
+}
+```
+
+Reload the server in **Cursor Settings → MCP**, then run the same `list_issues` test. Check status anytime with `mcpize status` and `mcpize logs`.
+
 ---
