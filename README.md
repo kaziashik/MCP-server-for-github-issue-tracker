@@ -1,113 +1,75 @@
-# 🚀 Build & Monetize  MCP Server (Model Context Protocol) | MCPize 
+# GitHub Issue Tracker MCP Server
 
+A small [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) server. It lets Cursor list GitHub issues, label them, post comments, and draft a weekly digest and release notes.
 
+Almost all of the code is in `src/index.ts`. GitHub access uses `GITHUB_TOKEN`.
 
-## 📚 What You’ll Learn
+## What this server does
 
-This small projet covers:
+| Tool | What it does | Changes GitHub? |
+|---|---|---|
+| `list_issues` | Up to 10 issues. `state` is `open`, `closed`, or `all`. Pull requests are skipped. | No |
+| `weekly_digest` | Count of issues updated in the last 7 days. | No |
+| `release_notes` | Markdown from the last 10 merged pull requests. | No |
+| `triage_issue` | Label `bug` if the title or body contains "bug", otherwise `enhancement`. | Yes |
+| `add_comment` | Post a comment on an issue or pull request. | Yes |
 
-- ✅ What the Model Context Protocol (MCP) is and how it works.
-- ✅ How to build a GitHub Issue Tracker using TypeScript and Octokit.
-- ✅ Connecting your local MCP server to AI clients like Cursor.
-- ✅ Deploying your server for free using the MCPize platform.
-- ✅ Setting up AI-generated pricing plans to monetize your developer tools.
+## How it is built
 
----
-
-## 🧑‍💻 Tech Stack
-
-- [Model Context Protocol](https://modelcontextprotocol.io/docs/getting-started/intro) (`@modelcontextprotocol/sdk`) with Streamable HTTP
-- TypeScript (ES2022, NodeNext, strict) and Node.js 20+
-- [Octokit](https://github.com/octokit/rest.js) for the GitHub API
-- Express 5 for `/health` and `POST /mcp`
-- Zod for tool input validation
-- MCPize for deployment (`mcpize.yaml`, Dockerfile)
-
----
-
-## What this project is
-
-`github-issue-tracker` is a small MCP server. Almost all of the code lives in `src/index.ts`. It authenticates to GitHub with `GITHUB_TOKEN` and exposes five tools an AI client can call.
-
-| Path | Role |
+| File | Role |
 |---|---|
-| `src/index.ts` | Server, five tools, Express routes |
-| `package.json` | Scripts and dependencies |
-| `tsconfig.json` | TypeScript config |
-| `mcpize.yaml` | MCPize deploy manifest (TypeScript, HTTP) |
-| `Dockerfile` | Multi-stage Node 22 image, port 8080 |
-| `.env` | Local `GITHUB_TOKEN` (never commit this file) |
-| `.cursor/mcp.json` | Cursor connection to this server |
+| `src/index.ts` | MCP server, five tools, Express routes |
+| `package.json` | Dependencies and scripts |
+| `tsconfig.json` | TypeScript (ES2022, NodeNext, strict) |
+| `.env` | Local `GITHUB_TOKEN`. Never commit this file. |
+| `.cursor/mcp.json` | URL Cursor uses to reach the server |
+| `mcpize.yaml` | MCPize build and start commands |
+| `Dockerfile` | Node 22 image, port 8080 |
 
-The server listens on `PORT` (default `8080`).
+The process listens on `PORT` (default `8080`).
 
-- `GET /health` returns `{ "status": "healthy" }`
-- `POST /mcp` handles MCP requests
+- `GET /health` returns `{"status":"healthy"}`
+- `POST /mcp` is the MCP endpoint
+- `GET /mcp` returns **405**. That is expected. This server accepts `POST` only.
 
-## Tools
+Dependencies, installed by `npm install`:
 
-1. **`list_issues`** — Fetches up to 10 issues for an owner and repo. `state` can be `open`, `closed`, or `all` (default `open`). Pull requests are filtered out.
-2. **`triage_issue`** — Labels an issue `bug` when the title or body contains "bug", otherwise `enhancement`.
-3. **`weekly_digest`** — Counts issues updated in the last 7 days.
-4. **`release_notes`** — Builds markdown from the last 10 closed pull requests that were merged.
-5. **`add_comment`** — Posts a comment on an issue or pull request.
+| Package | Used for |
+|---|---|
+| `@modelcontextprotocol/sdk` | MCP server and Streamable HTTP |
+| `@octokit/rest` | GitHub API |
+| `express` | `/health` and `/mcp` |
+| `zod` | Tool input checks |
+| `dotenv` | Loads `.env` |
+| `chalk` | Startup logs |
+| `typescript`, `tsx`, `@types/node`, `@types/express` | Build and `npm run dev` |
 
-## Setup
+You need **Node.js 20+**.
 
-You need Node.js 20 or newer.
-
-### 1. Install dependencies
-
-From the project folder:
+## 1. Run it locally
 
 ```bash
 npm install
 ```
 
-That installs:
+Create a [fine-grained GitHub token](https://github.com/settings/tokens?type=beta):
 
-| Package | Used for |
-|---|---|
-| `@modelcontextprotocol/sdk` | MCP server and Streamable HTTP transport |
-| `@octokit/rest` | GitHub API (issues, labels, comments, pull requests) |
-| `express` | HTTP server for `/health` and `/mcp` |
-| `zod` | Tool input validation |
-| `dotenv` | Loads `GITHUB_TOKEN` from `.env` |
-| `chalk` | Colored startup logs |
-| `typescript`, `tsx`, `@types/node`, `@types/express` | Build and dev reload |
+- Repository access: only the repos this server should use
+- **Issues:** Read and write
+- **Pull requests:** Read-only
+- **Metadata:** Read-only
 
-### 2. Create a GitHub token
-
-1. Open [fine-grained personal access tokens](https://github.com/settings/tokens?type=beta) while signed in to GitHub.
-2. Click **Generate new token**.
-3. Name it `MCP-server-for-github-issue-tracker`.
-4. Set an expiration (30 or 90 days is enough for local use).
-5. Under **Repository access**, choose **Only select repositories** and pick the repos this server should use.
-6. Under **Permissions**, set:
-   - **Issues:** Read and write (list, label, comment)
-   - **Pull requests:** Read-only (release notes)
-   - **Metadata:** Read-only (GitHub adds this automatically)
-7. Generate the token and copy it once. GitHub will not show it again.
-
-### 3. Put the token in `.env`
-
-Create `.env` in the project root:
+Save it in `.env` in the project root. Do not commit it or paste it into chat.
 
 ```bash
 GITHUB_TOKEN=github_pat_your_token_here
 ```
 
-`PORT` is optional. It defaults to `8080`.
-
-`.env` is listed in `.gitignore`. Do not commit the token, and do not paste it into chat.
-
-### 4. Start the server
+Start the server and leave the terminal open:
 
 ```bash
 npm run dev
 ```
-
-Leave this terminal open. A working start looks like:
 
 ```text
 MCP Server running on http://localhost:8080
@@ -115,18 +77,13 @@ MCP Server running on http://localhost:8080
   MCP:    http://localhost:8080/mcp
 ```
 
-Other scripts:
+`npm run build` compiles to `dist/`. `npm start` runs that build.
 
-```bash
-npm run build  # compile TypeScript to dist/
-npm start      # run the compiled server
-```
+## 2. Connect Cursor
 
-## Connect an MCP client
+Cursor does not start this server. The process must already be running, locally or on MCPize.
 
-This server speaks HTTP, so the client does not start it. `npm run dev` must already be running.
-
-To connect Cursor, add this file at `.cursor/mcp.json` in the project root. The `url` is the MCP endpoint the client calls:
+Create `.cursor/mcp.json`:
 
 ```json
 {
@@ -138,27 +95,27 @@ To connect Cursor, add this file at `.cursor/mcp.json` in the project root. The 
 }
 ```
 
-That block is the whole client connection. `github-issue-tracker` is the name Cursor shows, and `http://localhost:8080/mcp` is this server.
+After deploy, point Cursor at the live server instead:
 
-Then, in Cursor:
+```json
+{
+  "mcpServers": {
+    "github-issue-tracker": {
+      "url": "https://mcp-server-for-github-issue-tracker.mcpize.run/mcp"
+    }
+  }
+}
+```
 
-1. Open **Cursor Settings → MCP**.
-2. Find **github-issue-tracker** and turn the project source on.
-3. Click **Reload**.
+Use the `/mcp` path. The site root is not the MCP endpoint.
 
-It is connected when the Streamable HTTP error is gone and these tools are enabled: `list_issues`, `triage_issue`, `weekly_digest`, `release_notes`, `add_comment`.
+Then open **Cursor Settings → MCP**, turn on **github-issue-tracker**, and click **Reload**. The five tools should be enabled. If you use the live URL, you can stop `npm run dev`.
 
-`GET /mcp` returns **405 Method Not Allowed** on purpose. Cursor opens that request looking for a server-sent event stream. This server only accepts `POST`.
+## 3. Test from Cursor
 
-## Test the server from Cursor
+Reload the server in MCP settings, then paste one prompt into a new Agent chat.
 
-1. Confirm the server is up. Local: `http://localhost:8080/health`. Hosted: `https://mcp-server-for-github-issue-tracker.mcpize.run/health`. Both should return `{"status":"healthy"}`.
-2. In Cursor MCP settings, click **Reload** on `github-issue-tracker`.
-3. Open a new Agent chat and paste one prompt at a time.
-
-A connected server returns tool output. A missing or invalid `GITHUB_TOKEN` returns a GitHub authentication error. After you change `.env`, restart `npm run dev` and reload the server in Cursor. On MCPize, set the secret and run `mcpize deploy` again.
-
-These three only read GitHub:
+Read-only:
 
 ```text
 Use the github-issue-tracker list_issues tool for owner kaziashik and repo MCP-server-for-github-issue-tracker. Include open, closed, and all issues.
@@ -172,9 +129,7 @@ Use the github-issue-tracker weekly_digest tool for owner kaziashik and repo MCP
 Use the github-issue-tracker release_notes tool for owner kaziashik and repo MCP-server-for-github-issue-tracker.
 ```
 
-`list_issues` returns issue titles, or `No issues found.` `weekly_digest` returns a count for the last 7 days. `release_notes` returns merged pull requests, or `No recent merged PRs found.`
-
-These two change the repository. Create a test issue on GitHub first, then replace `1` with that issue number.
+These two write to GitHub. Create a test issue first, then replace `1` with its number.
 
 ```text
 Use the github-issue-tracker triage_issue tool for owner kaziashik, repo MCP-server-for-github-issue-tracker, and issue number 1.
@@ -184,11 +139,11 @@ Use the github-issue-tracker triage_issue tool for owner kaziashik, repo MCP-ser
 Use the github-issue-tracker add_comment tool for owner kaziashik, repo MCP-server-for-github-issue-tracker, and issue number 1. Comment body: MCP server test comment.
 ```
 
-`triage_issue` adds the label `bug` when the title or body contains "bug", otherwise `enhancement`. `add_comment` posts that text on the issue.
+`No issues found.` or `No recent merged PRs found.` means the tool worked and the repo has nothing to show. A GitHub authentication error means the token is missing. Locally, fix `.env` and restart `npm run dev`. On MCPize, set the secret and deploy again.
 
-## Deploy on MCPize
+## 4. Deploy on MCPize
 
-`mcpize.yaml` already tells MCPize how to build and start this server.
+`mcpize.yaml` already has the build and start commands.
 
 ```bash
 npm install -g mcpize
@@ -197,47 +152,13 @@ mcpize secrets set GITHUB_TOKEN
 mcpize deploy
 ```
 
-`mcpize login` opens the browser. `mcpize secrets set GITHUB_TOKEN` asks for the token in the terminal. Do not put that token in the repo.
+`mcpize login` opens the browser. `mcpize secrets set GITHUB_TOKEN` asks for the token in the terminal. Then switch `.cursor/mcp.json` to the live URL in section 2 and reload Cursor.
 
-After a successful deploy:
+| | |
+|---|---|
+| Gateway | https://mcp-server-for-github-issue-tracker.mcpize.run |
+| Health | https://mcp-server-for-github-issue-tracker.mcpize.run/health |
+| MCP | https://mcp-server-for-github-issue-tracker.mcpize.run/mcp |
+| Marketplace | https://mcpize.com/mcp/mcp-server-for-github-issue-tracker |
 
-- Gateway: `https://mcp-server-for-github-issue-tracker.mcpize.run`
-- Health: `https://mcp-server-for-github-issue-tracker.mcpize.run/health`
-- MCP: `https://mcp-server-for-github-issue-tracker.mcpize.run/mcp`
-- Marketplace: `https://mcpize.com/mcp/mcp-server-for-github-issue-tracker`
-
-## Connect Cursor to the live link
-
-Yes. After deploy you can use the hosted server instead of `localhost`. Cursor needs the MCP path, not the site root:
-
-`https://mcp-server-for-github-issue-tracker.mcpize.run/mcp`
-
-Put that URL in `.cursor/mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "github-issue-tracker": {
-      "url": "https://mcp-server-for-github-issue-tracker.mcpize.run/mcp"
-    }
-  }
-}
-```
-
-Then:
-
-1. Open **Cursor Settings → MCP**.
-2. Reload **github-issue-tracker**.
-3. Stop the local `npm run dev` process. Cursor is now calling the hosted server.
-4. Test with the same `list_issues` prompt.
-
-If a tool returns a GitHub authentication error, the cloud server does not have the token yet. Set it, then deploy again:
-
-```bash
-mcpize secrets set GITHUB_TOKEN
-mcpize deploy
-```
-
-Check the deployment anytime with `mcpize status` and `mcpize logs`.
-
----
+Check a deployment with `mcpize status` and `mcpize logs`.
